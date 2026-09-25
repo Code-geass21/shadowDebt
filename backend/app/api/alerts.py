@@ -11,13 +11,9 @@ from app.models.alert import Alert
 router = APIRouter()
 
 @router.get("/", response_model=List[AlertResponse])
-def list_alerts(
-    dismissed: bool = False,
-    db: Session = Depends(get_db)
-):
-    return db.query(Alert).filter(
-        Alert.is_dismissed == dismissed
-    ).order_by(Alert.trigger_date.desc()).all()
+def list_alerts(db: Session = Depends(get_db)):
+    # Send ALL alerts to the frontend and let React handle the filtering toggle!
+    return db.query(Alert).order_by(Alert.trigger_date.desc()).all()
 
 @router.get("/unread-count")
 def unread_count(db: Session = Depends(get_db)):
