@@ -12,6 +12,7 @@ class LoanFeeBase(BaseModel):
     # <--- NEW PHASE 3: TAX FIELDS --->
     tax_rate: Optional[float] = 0.0
     tax_amount: Optional[float] = 0.0
+    created_at: Optional[datetime] = None  # <--- THE FIX: Allow historical timestamps
 
 class LoanFeeCreate(LoanFeeBase):
     pass

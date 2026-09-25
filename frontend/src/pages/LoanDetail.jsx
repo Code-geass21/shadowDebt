@@ -519,7 +519,13 @@ export default function LoanDetail() {
                     // 3. Loop through tenure and build rows
                     for (let i = 1; i <= loan.tenure_months; i++) {
                       const d = new Date(startDate);
-                      d.setMonth(d.getMonth() + (i - 1)); // Increment month
+
+                      // THE FIX: Safe month calculation to prevent skipping February
+                      const targetMonth = d.getMonth() + (i - 1);
+                      d.setMonth(targetMonth);
+                      if (d.getMonth() !== targetMonth % 12) {
+                        d.setDate(0); // Clamp to the absolute last day of the intended month
+                      }
 
                       const feesIncluded = i === 1 ? totalUpfront : 0; // Fees only on month 1
                       const totalExpected = emiBase + feesIncluded;
