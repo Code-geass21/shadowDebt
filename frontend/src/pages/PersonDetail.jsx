@@ -25,7 +25,11 @@ export default function PersonDetail() {
 
   const totalLent     = loans.filter(l => l.direction === 'lent').reduce((s, l) => s + parseFloat(l.principal), 0)
   const totalBorrowed = loans.filter(l => l.direction === 'borrowed').reduce((s, l) => s + parseFloat(l.principal), 0)
-  const totalBalance  = loans.reduce((s, l) => s + parseFloat(l.balance_due), 0)
+  // THE FIX: Subtract borrowed balances from lent balances to get the True Net Balance
+  const totalBalance  = loans.reduce((s, l) => {
+    const balance = parseFloat(l.balance_due);
+    return l.direction === 'lent' ? s + balance : s - balance;
+  }, 0)
 
   return (
     <div>
@@ -76,10 +80,14 @@ export default function PersonDetail() {
           <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>Total Borrowed</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#ea580c' }}>{formatCurrency(totalBorrowed)}</div>
         </div>
+        {/* THE FIX: Replaced the Outstanding Balance card */}
         <div className="card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>Outstanding Balance</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: totalBalance > 0 ? '#2563eb' : '#16a34a' }}>
-            {formatCurrency(totalBalance)}
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>Net Outstanding Balance</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: totalBalance > 0 ? '#16a34a' : totalBalance < 0 ? '#dc2626' : '#2563eb' }}>
+            {formatCurrency(Math.abs(totalBalance))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>
+            {totalBalance > 0 ? 'They owe you' : totalBalance < 0 ? 'You owe them' : 'Fully Settled'}
           </div>
         </div>
       </div>
