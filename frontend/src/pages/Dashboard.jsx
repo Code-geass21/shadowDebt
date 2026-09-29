@@ -11,8 +11,10 @@ import { formatCurrency, formatDate, statusColor, directionColor } from '../util
 
 // --- NEW: Time Travel Helper ---
 const getRecentMonths = () => {
-  const months = [];
+  // THE FIX: Inject the All-Time option at the very beginning of the array
+  const months = [{ value: '', label: 'All-Time Summary' }];
   const d = new Date();
+
   for (let i = 0; i < 12; i++) {
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -32,11 +34,8 @@ export default function Dashboard() {
   const [targetModal, setTargetModal] = useState(false)
   const [targetAmount, setTargetAmount] = useState('')
   const [savingTarget, setSavingTarget] = useState(false)
-  // Automatically default to the exact current month (e.g., '2026-07')
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  });
+  // THE FIX: Default back to the All-Time Summary when the app loads
+  const [selectedMonth, setSelectedMonth] = useState('');
   const { showReminder, lastBackup, markBackupDone, dismiss } = useBackupReminder()
 
   const load = () => {
@@ -109,9 +108,9 @@ export default function Dashboard() {
             onChange={(e) => setSelectedMonth(e.target.value)}
             style={{ cursor: 'pointer', appearance: 'none', paddingRight: '24px' }}
           >
-            {recentMonths.map((m, index) => (
+            {recentMonths.map(m => (
               <option key={m.value} value={m.value}>
-                {index === 0 ? `📅 Current (${m.label})` : `📅 ${m.label}`}
+                {m.value === '' ? `🌍 ${m.label}` : `📅 ${m.label}`}
               </option>
             ))}
           </select>
