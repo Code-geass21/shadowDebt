@@ -6,7 +6,7 @@ const api = axios.create({
 })
 
 // ── Dashboard ─────────────────────────────────
-export const getDashboard = () => api.get('/dashboard/')
+export const getDashboard = (month) => api.get('/dashboard/', { params: { month } })
 
 // ── Persons ───────────────────────────────────
 export const getPersons = (includeArchived = false) =>

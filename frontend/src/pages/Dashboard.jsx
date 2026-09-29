@@ -41,8 +41,12 @@ export default function Dashboard() {
 
   const load = () => {
     setLoading(true)
-    // Pass the selectedMonth to the targets API
-    Promise.all([getDashboard(), getTrends(18), getTargetsProgress(selectedMonth || undefined)])
+    // THE FIX: The Time Machine now powers the entire dashboard, not just the targets!
+    Promise.all([
+      getDashboard(selectedMonth || undefined),
+      getTrends(18),
+      getTargetsProgress(selectedMonth || undefined)
+    ])
       .then(([d, t, tg]) => {
         setData(d.data)
         setTrends(t.data)
