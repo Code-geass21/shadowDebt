@@ -56,23 +56,14 @@ def recalculate_loan_state(db: Session, loan_id: str):
 
     last_event_date = loan["date_issued"]
 
-    # Fetch the amortization type so we know the rules!
-    amortization_type = loan.get("amortization_type", "simple")
-
-    # --- THE MAGIC FIX: Dynamic Unified Ledger Engine ---
+    # --- THE MAGIC FIX: Dynamic Monthly Chunker ---
     def log_monthly_chunks(start_d: date, end_d: date, current_principal: Decimal):
         nonlocal total_interest_accrued, unpaid_interest
 
         curr = start_d
         while curr < end_d:
 
-            # THE SPLIT PERSONALITY FIX:
-            # If EMI, chunk by month. If informal, chunk strictly day-by-day!
-            if amortization_type == "emi":
-                next_step = _get_next_month_start(curr)
-            else:
-                next_step = curr + timedelta(days=1)
-
+            next_step = _get_next_month_start(curr)
             chunk_end = min(next_step, end_d)
 
             # DYNAMIC MATH: Check the snapshot to decide how to count days!
