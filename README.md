@@ -15,7 +15,7 @@ This application is 100% containerized and orchestrated via Docker/Portainer.
 
 1. **Clone the repository:**
 ```bash
-git clone 'https://github.com/Code-geass21/Personal-loan-tracker.git'
+git clone https://github.com/Code-geass21/Personal-loan-tracker.git
 cd Personal-loan-tracker
 ```
 
