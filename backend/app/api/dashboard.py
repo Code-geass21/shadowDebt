@@ -81,12 +81,20 @@ def get_dashboard(month: Optional[str] = None, db: Session = Depends(get_db)):
     except Exception as e:
         unread_alerts = None
 
+    try:
+        bad_debt = db.execute(
+            text("SELECT COALESCE(SUM(balance_due), 0) as total FROM loans WHERE status = 'defaulted' AND direction = 'lent'")
+        ).mappings().first()
+    except Exception as e:
+        bad_debt = {"total": 0}
+
     return {
         "summary":       dict(summary) if summary else {},
         "overdue":       [dict(r) for r in overdue],
         "due_soon":      [dict(r) for r in due_soon],
         "recent_loans":  [dict(r) for r in recent],
         "unread_alerts": unread_alerts["count"] if unread_alerts else 0,
+        "bad_debt":      float(bad_debt["total"]) # <--- NEW
     }
 
 from app.services.trends_service import get_lending_trends

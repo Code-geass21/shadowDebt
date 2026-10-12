@@ -236,6 +236,17 @@ export default function Dashboard() {
             Total projected profit from active loans
           </div>
         </div>
+
+        {/* --- NEW: BAD DEBT METRIC --- */}
+        <div className="card" style={{ background: 'var(--alert-red-bg)', border: '1px solid var(--alert-red-border)' }}>
+          <div className="stat-label" style={{ color: '#991b1b' }}>Total Bad Debt (Defaulted)</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 4, color: '#dc2626' }}>
+            {formatCurrency(data.bad_debt)}
+          </div>
+          <div className="stat-sub" style={{ marginTop: 4, color: '#991b1b' }}>
+            Unrecoverable lent capital
+          </div>
+        </div>
       </div>
 
       {/* 18-Month Trend Chart */}

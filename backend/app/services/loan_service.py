@@ -151,3 +151,25 @@ def get_due_soon(db: Session, days: int = 7) -> List[dict]:
         {"days": days}
     ).mappings().all()
     return [dict(r) for r in result]
+
+def write_off(db: Session, loan_id: UUID) -> Optional[Loan]:
+    loan = get_by_id(db, loan_id)
+    if not loan:
+        return None
+
+    loan.status = LoanStatus.defaulted
+    db.commit()
+    db.refresh(loan)
+
+    # Run the recalculation engine one last time to freeze the final balances
+    recalculate_loan_state(db, str(loan_id))
+
+    # Secure the audit log
+    from app.models.audit_log import AuditLog
+    db.add(AuditLog(
+        loan_id=loan_id,
+        action="Defaulted / Bad Debt",
+        description="Loan explicitly marked as Defaulted. Remaining balance frozen as an unrecoverable loss."
+    ))
+    db.commit()
+    return loan

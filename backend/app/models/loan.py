@@ -17,6 +17,7 @@ class LoanStatus(str, enum.Enum):
     settled   = "settled"
     overdue   = "overdue"
     cancelled = "cancelled"
+    defaulted = "defaulted"  # <--- NEW
 
 class InterestType(str, enum.Enum):
     simple   = "simple"

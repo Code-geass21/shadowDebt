@@ -100,6 +100,13 @@ def cancel_loan(loan_id: UUID, db: Session = Depends(get_db)):
 
     return result
 
+@router.post("/{loan_id}/write-off", response_model=LoanResponse)
+def write_off_loan(loan_id: UUID, db: Session = Depends(get_db)):
+    result = loan_service.write_off(db, loan_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    return result
+
 @router.get("/{loan_id}/payments", response_model=List[PaymentResponse])
 def get_loan_payments(loan_id: UUID, db: Session = Depends(get_db)):
     return payment_service.get_by_loan(db, loan_id)

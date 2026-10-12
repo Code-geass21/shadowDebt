@@ -28,6 +28,7 @@ export const getLoanAttachments = (id) => api.get(`/loans/${id}/attachments`)
 export const getLoanAlerts = (id) => api.get(`/loans/${id}/alerts`)
 export const getLoanInterest = (id) => api.get(`/loans/${id}/interest`)
 export const getLoanAudit = (id) => api.get(`/loans/${id}/audit`)
+export const writeOffLoan = (id) => api.post(`/loans/${id}/write-off`) // <--- NEW
 
 // ── Payments ──────────────────────────────────
 export const createPayment = (data) => api.post('/payments/', data)

@@ -181,7 +181,8 @@ def recalculate_loan_state(db: Session, loan_id: str):
     # --- THE ZOMBIE INTEREST FIX ---
     # If the loan is already closed, the clock stops at the last payment date!
     is_closed = loan["status"] in ('settled', 'cancelled')
-    target_date = last_event_date if is_closed else date.today()
+    is_defaulted = loan["status"] == 'defaulted'
+    target_date = last_event_date if (is_closed or is_defaulted) else date.today()
 
     # Step C: Accrue final interest to the target date
     log_monthly_chunks(last_event_date, target_date, principal_balance)
@@ -199,6 +200,9 @@ def recalculate_loan_state(db: Session, loan_id: str):
     if is_closed:
         new_status = loan["status"]
         balance_due = Decimal('0')  # Wipe out the ghost balance
+    elif is_defaulted:
+        new_status = 'defaulted'
+        # Do NOT wipe balance_due! We must preserve the exact amount lost.
 
     db.execute(text("""
         UPDATE loans

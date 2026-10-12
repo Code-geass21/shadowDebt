@@ -29,6 +29,7 @@ export const statusColor = (status) => {
     case 'settled':   return 'badge-green'
     case 'overdue':   return 'badge-red'
     case 'cancelled': return 'badge-gray'
+    case 'defaulted': return 'badge-red' // <--- NEW
     default:          return 'badge-gray'
   }
 }

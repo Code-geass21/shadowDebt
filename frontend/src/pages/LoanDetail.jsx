@@ -5,7 +5,7 @@ import {
   getLoan, getLoanPayments, getLoanAttachments,
   getLoanInterest, getLoanAudit, getLoanAlerts,
   createPayment, deletePayment, uploadAttachment,
-  deleteAttachment, deleteLoan, cancelLoan,
+  deleteAttachment, deleteLoan, cancelLoan,writeOffLoan,
   getLoanTarget, createTarget, updateLoan,
   getLoanFees, createLoanFee, deleteLoanFee, dismissAlert
 } from '../utils/api'
@@ -161,6 +161,19 @@ export default function LoanDetail() {
     } catch (e) { toast.error('Failed to pre-close loan') }
     finally { setSaving(false) }
   }
+
+  // ---> PASTE THE NEW FUNCTION EXACTLY HERE <---
+  const handleWriteOff = async () => {
+    if (!confirm("Are you sure you want to mark this loan as DEFAULTED? The balance will be frozen as an unrecoverable Bad Debt.")) return;
+    setSaving(true);
+    try {
+      await writeOffLoan(id);
+      toast.success('Loan marked as defaulted.');
+      load();
+    } catch (e) { toast.error('Failed to mark as defaulted') }
+    finally { setSaving(false) }
+  }
+  // ---------------------------------------------
 
   const addFee = async () => {
     if (!feeForm.amount) {
@@ -398,21 +411,27 @@ export default function LoanDetail() {
 
           {/* ACTION BUTTONS GROUP */}
           <div style={{ display: 'flex', gap: 8 }}>
-            {loan.status !== 'cancelled' && loan.status !== 'settled' && (
+            {loan.status !== 'cancelled' && loan.status !== 'settled' && loan.status !== 'defaulted' && (
               <>
                 <button className="btn btn-danger btn-sm" onClick={() => setPreCloseModal(true)} style={{ background: '#dc2626', color: 'white', border: 'none' }}>
                   <AlertTriangle size={13} style={{ marginRight: 4 }} /> Pre-Close Loan
                 </button>
+
+                {/* ---> NEW MARK DEFAULT BUTTON <--- */}
+                <button className="btn btn-sm" onClick={handleWriteOff} style={{ background: '#1e293b', color: '#f8fafc', border: 'none' }}>
+                  <XCircle size={13} style={{ marginRight: 4 }} /> Mark Default
+                </button>
+
                 <button className="btn btn-success btn-sm" onClick={() => { setPayForm({...EMPTY_PAYMENT, amount: loan.balance_due}); setPayModal(true); }}>
                   <Plus size={13} /> Add Payment
                 </button>
-              </>
-            )}
+            </>
+          )}
 
-            <button className="btn btn-secondary btn-sm" onClick={() => { setTargetAmount(loanTarget?.monthly_amount?.toString() || ''); setTargetModal(true); }}>
-              🎯 Set Target
-            </button>
-            <button className="btn btn-secondary btn-sm" onClick={openEditModal}>✏ Edit Loan</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => { setTargetAmount(loanTarget?.monthly_amount?.toString() || ''); setTargetModal(true); }}>
+            🎯 Set Target
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={openEditModal}>✏ Edit Loan</button>
 
             <select
                 className="btn btn-secondary btn-sm"
