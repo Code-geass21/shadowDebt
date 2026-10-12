@@ -29,15 +29,15 @@ def get_dashboard(month: Optional[str] = None, db: Session = Depends(get_db)):
         # Bonus: Added expected_monthly_in, out, and yield to fix the UI's empty cards!
         summary = db.execute(text(f"""
             SELECT
-                COUNT(*) FILTER (WHERE direction = 'lent'     AND status NOT IN ('settled','cancelled')) AS active_lent_count,
-                COUNT(*) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled')) AS active_borrowed_count,
+                COUNT(*) FILTER (WHERE direction = 'lent'     AND status NOT IN ('settled','cancelled','defaulted')) AS active_lent_count,
+                COUNT(*) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled','defaulted')) AS active_borrowed_count,
                 COUNT(*) FILTER (WHERE status = 'overdue')                                               AS overdue_count,
                 COUNT(*) FILTER (WHERE status = 'settled')                                               AS settled_count,
-                COALESCE(SUM(balance_due) FILTER (WHERE direction = 'lent'     AND status NOT IN ('settled','cancelled')), 0) AS total_receivable,
-                COALESCE(SUM(balance_due) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled')), 0) AS total_payable,
-                COALESCE(SUM(emi_amount) FILTER (WHERE direction = 'lent' AND status NOT IN ('settled','cancelled')), 0) AS expected_monthly_in,
-                COALESCE(SUM(emi_amount) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled')), 0) AS expected_monthly_out,
-                COALESCE(SUM(total_interest) FILTER (WHERE direction = 'lent' AND status NOT IN ('settled','cancelled')), 0) AS expected_yield
+                COALESCE(SUM(balance_due) FILTER (WHERE direction = 'lent'     AND status NOT IN ('settled','cancelled','defaulted')), 0) AS total_receivable,
+                COALESCE(SUM(balance_due) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled','defaulted')), 0) AS total_payable,
+                COALESCE(SUM(emi_amount) FILTER (WHERE direction = 'lent' AND status NOT IN ('settled','cancelled','defaulted')), 0) AS expected_monthly_in,
+                COALESCE(SUM(emi_amount) FILTER (WHERE direction = 'borrowed' AND status NOT IN ('settled','cancelled','defaulted')), 0) AS expected_monthly_out,
+                COALESCE(SUM(total_interest) FILTER (WHERE direction = 'lent' AND status NOT IN ('settled','cancelled','defaulted')), 0) AS expected_yield
             FROM loans
             WHERE 1=1 {date_filter}
         """), params).mappings().first()
