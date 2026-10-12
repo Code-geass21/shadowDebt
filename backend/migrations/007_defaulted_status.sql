@@ -43,3 +43,52 @@ SELECT
     END AS days_until_due
 FROM loans l
 JOIN persons p ON l.person_id = p.id;
+
+-- 4. Secure the Database Trigger so it doesn't overwrite Defaulted statuses
+CREATE OR REPLACE FUNCTION recalculate_loan_totals()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_loan_id        UUID;
+    v_principal      NUMERIC(15,2);
+    v_total_paid     NUMERIC(15,2);
+    v_total_interest NUMERIC(15,2);
+    v_new_status     loan_status;
+    v_due_date       DATE;
+    v_current_status loan_status;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_loan_id := OLD.loan_id;
+    ELSE
+        v_loan_id := NEW.loan_id;
+    END IF;
+
+    SELECT COALESCE(SUM(amount), 0) INTO v_total_paid FROM payments WHERE loan_id = v_loan_id;
+    SELECT COALESCE(SUM(interest_accrued), 0) INTO v_total_interest FROM interest_ledger WHERE loan_id = v_loan_id;
+    SELECT principal, due_date, status INTO v_principal, v_due_date, v_current_status FROM loans WHERE id = v_loan_id;
+
+    -- THE FIX: Do not auto-change cancelled OR defaulted loans!
+    IF v_current_status IN ('cancelled', 'defaulted') THEN
+        RETURN COALESCE(NEW, OLD);
+    END IF;
+
+    IF v_total_paid >= (v_principal + v_total_interest) THEN
+        v_new_status := 'settled';
+    ELSIF v_total_paid > 0 THEN
+        IF v_due_date IS NOT NULL AND v_due_date < CURRENT_DATE THEN
+            v_new_status := 'overdue';
+        ELSE
+            v_new_status := 'partial';
+        END IF;
+    ELSE
+        IF v_due_date IS NOT NULL AND v_due_date < CURRENT_DATE THEN
+            v_new_status := 'overdue';
+        ELSE
+            v_new_status := 'active';
+        END IF;
+    END IF;
+
+    UPDATE loans SET total_paid = v_total_paid, total_interest = v_total_interest, balance_due = GREATEST(0, (v_principal + v_total_interest) - v_total_paid), status = v_new_status WHERE id = v_loan_id;
+
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
