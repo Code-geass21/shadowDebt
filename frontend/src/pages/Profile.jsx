@@ -5,6 +5,7 @@ import api from '../utils/api';
 export default function Profile() {
     const [user, setUser] = useState({ username: '', profile_picture: null });
     const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
+    const [newUsername, setNewUsername] = useState(''); // 👈 NEW STATE
 
     useEffect(() => {
         api.get('/auth/me').then(r => setUser(r.data)).catch(() => {});
@@ -17,6 +18,23 @@ export default function Profile() {
             setPasswords({ old_password: '', new_password: '' });
         } catch (e) {
             toast.error(e.response?.data?.detail || 'Failed to update password');
+        }
+    };
+
+    // 👇 NEW: Handle Username Change
+    const changeUsername = async () => {
+        if (!newUsername.trim()) return toast.error("Username cannot be empty");
+        try {
+            const res = await api.post('/auth/update-username', { new_username: newUsername });
+
+            // Instantly swap the old token for the newly forged one
+            localStorage.setItem('token', res.data.access_token);
+
+            toast.success('Username updated successfully');
+            setNewUsername('');
+            window.location.reload(); // Hard refresh to update the global sidebar name
+        } catch (e) {
+            toast.error(e.response?.data?.detail || 'Failed to update username');
         }
     };
 
@@ -41,8 +59,9 @@ export default function Profile() {
 
         <div className="grid-2">
         <div className="card">
-        <div className="card-title">Profile Picture</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div className="card-title">Profile Identity</div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid var(--border-color)' }}>
         {user.profile_picture ? (
             <img src={`/uploads/${user.profile_picture}`} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
         ) : (
@@ -54,6 +73,15 @@ export default function Profile() {
         Upload New Picture
         <input type="file" style={{ display: 'none' }} accept="image/*" onChange={uploadAvatar} />
         </label>
+        </div>
+
+        {/* 👇 NEW: Username update UI 👇 */}
+        <div style={{ marginBottom: 12, fontSize: 13, color: 'var(--text-secondary)' }}>
+        Current Username: <strong>{user.username}</strong>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+        <input className="input" type="text" placeholder="Enter new username" value={newUsername} onChange={e => setNewUsername(e.target.value)} />
+        <button className="btn btn-primary" onClick={changeUsername} style={{ whiteSpace: 'nowrap' }}>Update Name</button>
         </div>
         </div>
 

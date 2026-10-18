@@ -18,6 +18,10 @@ class PasswordChange(BaseModel):
     old_password: str
     new_password: str
 
+# 👇 NEW: Schema for username updates
+class UsernameChange(BaseModel):
+    new_username: str
+
 @router.post("/login")
 def login(data: LoginData, db: Session = Depends(get_db)):
     user = db.execute(text("SELECT * FROM users WHERE username = :u"), {"u": data.username}).mappings().first()
@@ -41,6 +45,27 @@ def change_password(data: PasswordChange, db: Session = Depends(get_db), user: d
                {"hash": get_password_hash(data.new_password), "u": user["username"]})
     db.commit()
     return {"status": "success"}
+
+# 👇 NEW: The Username Update Endpoint
+@router.post("/update-username")
+def update_username(data: UsernameChange, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    new_name = data.new_username.strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+
+    # Prevent crashing the database by checking for duplicates first
+    existing = db.execute(text("SELECT id FROM users WHERE username = :u"), {"u": new_name}).mappings().first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username is already taken")
+
+    # Update the row
+    db.execute(text("UPDATE users SET username = :new WHERE username = :old"),
+               {"new": new_name, "old": user["username"]})
+    db.commit()
+
+    # Generate a brand new token containing the new username to prevent immediate logout
+    new_token = create_access_token(data={"sub": new_name})
+    return {"access_token": new_token, "username": new_name}
 
 @router.post("/avatar")
 async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
