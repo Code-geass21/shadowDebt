@@ -80,3 +80,11 @@ async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_
                {"path": filename, "u": user["username"]})
     db.commit()
     return {"profile_picture": filename}
+
+# 👇 NEW: Public endpoint to fetch an avatar for the login screen
+@router.get("/avatar/{username}")
+def get_public_avatar(username: str, db: Session = Depends(get_db)):
+    user = db.execute(text("SELECT profile_picture FROM users WHERE username = :u"), {"u": username}).mappings().first()
+    if user and user["profile_picture"]:
+        return {"profile_picture": user["profile_picture"]}
+    return {"profile_picture": None}
