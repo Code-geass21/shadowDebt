@@ -52,11 +52,20 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="sidebar-footer">
-          <span>100% Local · No Cloud</span>
-          <button className="theme-toggle" onClick={toggleTheme}>
-            {theme === 'light' ? '🌙' : '☀️'} {theme === 'light' ? 'Dark' : 'Light'}
-          </button>
+        <div className="sidebar-footer" style={{ flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
+          {/* 👇 This is the missing link to the Profile page 👇 */}
+          <NavLink to="/profile" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e2e8f0', fontWeight: 600 }}>
+            ⚙ Settings & Profile
+          </NavLink>
+
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', marginTop: 8 }}>
+            <button className="theme-toggle" onClick={toggleTheme}>
+              {theme === 'light' ? '🌙' : '☀'} {theme === 'light' ? 'Dark' : 'Light'}
+            </button>
+            <button className="theme-toggle" onClick={() => { localStorage.removeItem('token'); window.location.href='/login'; }}>
+              🚪 Logout
+            </button>
+          </div>
         </div>
       </aside>
 
