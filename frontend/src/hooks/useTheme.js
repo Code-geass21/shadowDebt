@@ -1,23 +1,24 @@
 import { useState, useEffect } from 'react'
+import api from '../utils/api'
 
 export function useTheme() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
 
   useEffect(() => {
-    // 1. First, apply whatever we have locally so there's no visual flash
     document.documentElement.setAttribute('data-theme', theme)
 
-    // 2. Then, ask the Database if it has a better answer
-    fetch('/api/settings/')
-      .then(r => r.json())
-      .then(data => {
-        if (data.theme) {
-          setTheme(data.theme)
-          document.documentElement.setAttribute('data-theme', data.theme)
-          localStorage.setItem('theme', data.theme)
-        }
-      })
-      .catch(() => console.log("DB unreachable, using local theme"))
+    // Crucial fix: Don't ask the DB for the theme if we aren't logged in yet!
+    if (!localStorage.getItem('token')) return;
+
+    api.get('/settings/')
+    .then(r => {
+      if (r.data.theme) {
+        setTheme(r.data.theme)
+        document.documentElement.setAttribute('data-theme', r.data.theme)
+        localStorage.setItem('theme', r.data.theme)
+      }
+    })
+    .catch(() => console.log("DB unreachable, using local theme"))
   }, [])
 
   useEffect(() => {
@@ -29,12 +30,10 @@ export function useTheme() {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
 
+    if (!localStorage.getItem('token')) return;
+
     try {
-      await fetch(`/api/settings/theme`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: newTheme })
-      })
+      await api.patch('/settings/theme', { value: newTheme })
     } catch {
       console.log("Could not save theme to DB, relying on local storage")
     }
