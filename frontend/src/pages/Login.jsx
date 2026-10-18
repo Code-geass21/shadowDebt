@@ -58,59 +58,69 @@ export default function Login() {
 
     return (
         <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-sidebar)' }}>
-        <div className="card" style={{ width: 400, padding: '40px 30px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', border: '1px solid #1e293b' }}>
 
-        {/* 👇 BIG PROFILE PICTURE UI 👇 */}
-        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
-        {avatar ? (
-            <img
-            src={`/uploads/${avatar}`}
-            alt="User Avatar"
-            style={{
-                width: 130, height: 130, borderRadius: '50%', objectFit: 'cover',
-                border: '4px solid #2563eb', boxShadow: '0 4px 20px rgba(37,99,235,0.4)',
-                   transition: 'all 0.3s ease-in-out'
-            }}
-            />
-        ) : (
-            <div style={{
-                width: 130, height: 130, borderRadius: '50%', background: '#0f172a',
-                border: '4px solid #334155', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', transition: 'all 0.3s ease-in-out'
-            }}>
-            {/* Default Eagle Logo */}
-            <svg viewBox="0 0 24 24" fill="#334155" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22 2C22 2 14.5 4 12 8C9.5 4 2 2 2 2C2 2 6.5 8 5 14C8 12 12 16 12 16C12 16 16 12 19 14C17.5 8 22 2 22 2Z" />
-            </svg>
+        {/* 👇 NEW: The slick bounce animation 👇 */}
+        <style>{`
+            @keyframes avatarBounce {
+                0% { opacity: 0; transform: scale(0.5); }
+                60% { opacity: 1; transform: scale(1.1); }
+                80% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            `}</style>
+
+            <div className="card" style={{ width: 400, padding: '40px 30px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', border: '1px solid #1e293b' }}>
+
+            <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center', minHeight: 138 }}>
+            {avatar ? (
+                <img
+                src={`/uploads/${avatar}`}
+                alt="User Avatar"
+                style={{
+                    width: 130, height: 130, borderRadius: '50%', objectFit: 'cover',
+                    border: '4px solid #2563eb', boxShadow: '0 4px 20px rgba(37,99,235,0.4)',
+                       // Apply the animation right here
+                       animation: 'avatarBounce 0.4s ease-out forwards'
+                }}
+                />
+            ) : (
+                <div style={{
+                    width: 130, height: 130, borderRadius: '50%', background: '#0f172a',
+                    border: '4px solid #334155', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', transition: 'all 0.3s ease-in-out'
+                }}>
+                <svg viewBox="0 0 24 24" fill="#334155" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 2C22 2 14.5 4 12 8C9.5 4 2 2 2 2C2 2 6.5 8 5 14C8 12 12 16 12 16C12 16 16 12 19 14C17.5 8 22 2 22 2Z" />
+                </svg>
+                </div>
+            )}
             </div>
-        )}
-        </div>
 
-        <h2 style={{ marginBottom: 24, fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Welcome Back</h2>
+            <h2 style={{ marginBottom: 24, fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Welcome Back</h2>
 
-        <form onSubmit={handleLogin}>
-        <input
-        className="input"
-        placeholder="Username"
-        value={username}
-        onChange={e => setUsername(e.target.value)}
-        style={{ marginBottom: 16, textAlign: 'center', fontSize: 16, padding: '12px' }}
-        autoComplete="username"
-        />
-        <input
-        className="input"
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        style={{ marginBottom: 24, textAlign: 'center', fontSize: 16, padding: '12px' }}
-        autoComplete="current-password"
-        />
-        <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 16, fontWeight: 700 }}>
-        {loading ? 'Authenticating...' : 'Secure Login'}
-        </button>
-        </form>
-        </div>
-        </div>
+            <form onSubmit={handleLogin}>
+            <input
+            className="input"
+            placeholder="Username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            style={{ marginBottom: 16, textAlign: 'center', fontSize: 16, padding: '12px' }}
+            autoComplete="username"
+            />
+            <input
+            className="input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            style={{ marginBottom: 24, textAlign: 'center', fontSize: 16, padding: '12px' }}
+            autoComplete="current-password"
+            />
+            <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 16, fontWeight: 700 }}>
+            {loading ? 'Authenticating...' : 'Secure Login'}
+            </button>
+            </form>
+            </div>
+            </div>
     );
 }
