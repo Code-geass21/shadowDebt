@@ -750,7 +750,8 @@ export default function LoanDetail() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 8 }}>
-                          <a href={`/api/attachments/${a.id}/download`} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                          {/* 👇 The token is appended directly to the URL here 👇 */}
+                          <a href={`/api/attachments/${a.id}/download?token=${localStorage.getItem('token')}`} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
                             👁 View
                           </a>
                           <button className="btn btn-danger btn-sm" onClick={() => removeAttachment(a.id)}>
